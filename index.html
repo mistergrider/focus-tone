@@ -227,34 +227,43 @@
     right: 16px;
   }
   @media (min-width: 900px) {
+    body {
+      padding: 0;
+      align-items: stretch;
+      justify-content: stretch;
+    }
     .card {
-      width: 92vw;
-      max-width: 1200px;
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      border-radius: 0;
       display: flex;
       flex-direction: row;
       align-items: stretch;
       gap: 28px;
-      padding: 32px;
+      padding: 28px;
     }
     .control-panel {
       flex: 0 0 20%;
-      max-width: 20%;
-      min-width: 240px;
-      overflow-y: auto;
+      min-width: 300px;
+      max-width: 420px;
+      height: 100%;
+      overflow-y: auto; /* safety net only — panel is sized to avoid needing it */
     }
     .viz-panel {
-      flex: 1 1 80%;
+      flex: 1 1 auto;
       display: flex;
       flex-direction: column;
       min-width: 0; /* allow flex child to shrink below content size */
+      height: 100%;
     }
     .viz-panel .viz-wrap {
       flex: 1 1 auto;
       margin-top: 0;
+      height: 100%;
     }
     .viz-panel canvas {
       height: 100%;
-      min-height: 480px;
     }
   }
 </style>
@@ -298,7 +307,7 @@
   <div class="row toggle-row">
     <span>Modulate Noise</span>
     <label class="switch">
-      <input type="checkbox" id="noiseAMToggle" checked>
+      <input type="checkbox" id="noiseAMToggle">
       <span class="slider-toggle"></span>
     </label>
   </div>
@@ -348,18 +357,11 @@
   <div class="row" style="margin-top:16px;">
     <label><span>Visualizer</span></label>
     <select id="vizModeSelect">
-      <option value="bars" selected>Bars</option>
-      <option value="waves">Waves</option>
+      <option value="bars">Bars</option>
+      <option value="waves" selected>Waves</option>
       <option value="radial">Radial</option>
       <option value="particles">Particles</option>
     </select>
-  </div>
-  <div class="row toggle-row">
-    <span>Auto Cycle</span>
-    <label class="switch">
-      <input type="checkbox" id="vizAutoCycleToggle">
-      <span class="slider-toggle"></span>
-    </label>
   </div>
 </div>
 <div class="viz-panel">
@@ -378,10 +380,9 @@ let modRate = 18;
 let modBandLabel = 'Beta';
 let graphBuilt = false;
 let padWave;
-let noiseAMEnabled = true;
+let noiseAMEnabled = false;
 let noiseTypeSelected = 'brown';
-let vizMode = 'bars';
-let vizAutoCycle = false;
+let vizMode = 'waves';
 let vizHue = 200;
 let particles = [];
 
@@ -1048,19 +1049,8 @@ function drawViz() {
     }
   }
 
-  const modeOrder = ['bars', 'waves', 'radial', 'particles'];
-  let lastCycle = performance.now();
-
   function loop(now) {
     animId = requestAnimationFrame(loop);
-
-    if (vizAutoCycle && now - lastCycle > 12000) {
-      const idx = modeOrder.indexOf(vizMode);
-      vizMode = modeOrder[(idx + 1) % modeOrder.length];
-      const select = document.getElementById('vizModeSelect');
-      if (select) select.value = vizMode;
-      lastCycle = now;
-    }
 
     switch (vizMode) {
       case 'waves': drawWaves(); break;
@@ -1260,10 +1250,6 @@ window.addEventListener('resize', () => resizeCanvasToDisplaySize());
 
 document.getElementById('vizModeSelect').addEventListener('change', (e) => {
   vizMode = e.target.value;
-});
-
-document.getElementById('vizAutoCycleToggle').addEventListener('change', (e) => {
-  vizAutoCycle = e.target.checked;
 });
 
 document.getElementById('chimeToggle').addEventListener('change', (e) => {
