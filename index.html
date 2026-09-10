@@ -44,37 +44,6 @@
     font-size: 0.85rem;
     margin-bottom: 24px;
   }
-  .modes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 22px;
-  }
-  .mode-btn {
-    flex: 1 1 28%;
-    min-width: 84px;
-    padding: 12px 6px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: #1f232c;
-    color: var(--text);
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-align: center;
-    transition: 0.15s;
-  }
-  .mode-btn.active {
-    border-color: var(--accent);
-    background: rgba(110,231,209,0.12);
-    color: var(--accent);
-  }
-  .mode-btn small {
-    display: block;
-    color: var(--muted);
-    font-size: 0.7rem;
-    margin-top: 2px;
-  }
-  .mode-btn.active small { color: var(--accent); }
   .row {
     margin-bottom: 18px;
   }
@@ -226,6 +195,127 @@
     top: 16px;
     right: 16px;
   }
+
+  .pomo-title {
+    font-size: 1.05rem;
+    margin: 0 0 16px;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .preset-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #1f232c;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .preset-btn.active {
+    border-color: var(--accent2);
+    background: rgba(246,193,119,0.14);
+    color: var(--accent2);
+  }
+  .preset-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ring-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto 20px;
+  }
+  .ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-bg {
+    fill: none;
+    stroke: #1f232c;
+    stroke-width: 10;
+  }
+  .ring-progress {
+    fill: none;
+    stroke: var(--accent2);
+    stroke-width: 10;
+    stroke-linecap: round;
+  }
+  .ring-time {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', monospace;
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .pomo-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .pomo-controls button {
+    flex: 1;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #1f232c;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  #pomodoroStartBtn {
+    border-color: var(--accent);
+    background: rgba(110,231,209,0.14);
+    color: var(--accent);
+  }
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1f232c;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .task-item.dragging {
+    opacity: 0.4;
+  }
+  .drag-handle {
+    color: var(--muted);
+    cursor: grab;
+    font-size: 0.9rem;
+    line-height: 1;
+    user-select: none;
+    touch-action: none;
+  }
+  .task-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .task-input::placeholder {
+    color: var(--muted);
+  }
+
   @media (min-width: 900px) {
     body {
       padding: 0;
@@ -265,6 +355,15 @@
     .viz-panel canvas {
       height: 100%;
     }
+    .pomodoro-panel {
+      flex: 0 0 22%;
+      min-width: 300px;
+      max-width: 380px;
+      height: 100%;
+      overflow-y: auto;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding-left: 28px;
+    }
   }
 </style>
 </head>
@@ -274,12 +373,15 @@
   <h1>Focus Tone</h1>
   <div class="sub">Amplitude-modulated ambient bed for sustained attention</div>
 
-  <div class="modes" id="modes">
-    <div class="mode-btn" data-rate="3" data-band="Delta">Delta<small>3 Hz</small></div>
-    <div class="mode-btn" data-rate="6" data-band="Theta">Theta<small>6 Hz</small></div>
-    <div class="mode-btn" data-rate="10" data-band="Alpha">Alpha<small>10 Hz</small></div>
-    <div class="mode-btn active" data-rate="18" data-band="Beta">Beta<small>18 Hz</small></div>
-    <div class="mode-btn" data-rate="40" data-band="Gamma">Gamma<small>40 Hz</small></div>
+  <div class="row">
+    <label><span>Brainwave Target</span></label>
+    <select id="modeSelect">
+      <option value="3" data-band="Delta">Delta — 3 Hz — Deep Rest</option>
+      <option value="6" data-band="Theta">Theta — 6 Hz — Meditative</option>
+      <option value="10" data-band="Alpha">Alpha — 10 Hz — Calm Focus</option>
+      <option value="18" data-band="Beta" selected>Beta — 18 Hz — Active Focus</option>
+      <option value="40" data-band="Gamma">Gamma — 40 Hz — Peak Alertness</option>
+    </select>
   </div>
 
   <div class="row">
@@ -310,26 +412,6 @@
       <input type="checkbox" id="noiseAMToggle">
       <span class="slider-toggle"></span>
     </label>
-  </div>
-
-  <div class="row toggle-row">
-    <span>Time Chime</span>
-    <label class="switch">
-      <input type="checkbox" id="chimeToggle">
-      <span class="slider-toggle"></span>
-    </label>
-  </div>
-  <div class="row" id="chimeIntervalRow" style="display:none;">
-    <label><span>Chime Every</span></label>
-    <select id="chimeInterval">
-      <option value="5">5 minutes</option>
-      <option value="10">10 minutes</option>
-      <option value="15" selected>15 minutes</option>
-      <option value="20">20 minutes</option>
-      <option value="30">30 minutes</option>
-      <option value="45">45 minutes</option>
-      <option value="60">60 minutes</option>
-    </select>
   </div>
 
   <div class="row toggle-row">
@@ -370,6 +452,42 @@
     <button class="fs-btn" id="fullscreenBtn" title="Full screen">⛶</button>
   </div>
 </div>
+<div class="pomodoro-panel">
+  <h2 class="pomo-title">Pomodoro</h2>
+
+  <div class="preset-row">
+    <button class="preset-btn active" data-mins="25">25 min</button>
+    <button class="preset-btn" data-mins="45">45 min</button>
+  </div>
+
+  <div class="ring-wrap">
+    <svg viewBox="0 0 200 200" class="ring-svg">
+      <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+      <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="90"></circle>
+    </svg>
+    <div class="ring-time" id="pomodoroTime">25:00</div>
+  </div>
+
+  <div class="pomo-controls">
+    <button id="pomodoroStartBtn">Start</button>
+    <button id="pomodoroResetBtn">Reset</button>
+  </div>
+
+  <div class="task-list" id="taskList">
+    <div class="task-item">
+      <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+      <input type="text" class="task-input" placeholder="First thing to focus on">
+    </div>
+    <div class="task-item">
+      <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+      <input type="text" class="task-input" placeholder="Second thing">
+    </div>
+    <div class="task-item">
+      <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+      <input type="text" class="task-input" placeholder="Third thing">
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -386,10 +504,7 @@ let vizMode = 'waves';
 let vizHue = 200;
 let particles = [];
 
-// Time-tracking chime
-let chimeEnabled = false;
-let chimeIntervalMinutes = 15;
-let chimeTimeoutId = null;
+// Time-tracking chime (bell tone) — reused by the Pomodoro timer on completion
 let sessionStartTime = null;
 let elapsedIntervalId = null;
 
@@ -671,16 +786,6 @@ function playChime() {
   });
 }
 
-function scheduleNextChime() {
-  clearTimeout(chimeTimeoutId);
-  if (!chimeEnabled) return;
-  chimeTimeoutId = setTimeout(() => {
-    if (!playing || !chimeEnabled) return;
-    playChime();
-    scheduleNextChime();
-  }, chimeIntervalMinutes * 60 * 1000);
-}
-
 function formatElapsed(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const h = Math.floor(totalSeconds / 3600);
@@ -709,6 +814,145 @@ function stopElapsedTimer() {
   const el = document.getElementById('elapsedTime');
   if (el) el.textContent = '00:00';
 }
+
+// --- Pomodoro timer ---
+const RING_RADIUS = 90;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+let pomodoroDuration = 25 * 60;
+let pomodoroRemaining = pomodoroDuration;
+let pomodoroRunning = false;
+let pomodoroIntervalId = null;
+
+function formatMinSec(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function updatePomodoroRing() {
+  const ring = document.getElementById('ringProgress');
+  if (!ring) return;
+  ring.style.strokeDasharray = RING_CIRCUMFERENCE;
+  const elapsedFraction = 1 - (pomodoroRemaining / pomodoroDuration);
+  // Ring fills up (shows elapsed time) rather than draining down.
+  ring.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - elapsedFraction);
+  const timeEl = document.getElementById('pomodoroTime');
+  if (timeEl) timeEl.textContent = formatMinSec(pomodoroRemaining);
+}
+
+function hideAllButTopTask() {
+  document.querySelectorAll('#taskList .task-item').forEach((el, i) => {
+    el.style.display = i === 0 ? 'flex' : 'none';
+  });
+}
+
+function showAllTasks() {
+  document.querySelectorAll('#taskList .task-item').forEach(el => {
+    el.style.display = 'flex';
+  });
+}
+
+function setPresetButtonsDisabled(disabled) {
+  document.querySelectorAll('.preset-btn').forEach(b => { b.disabled = disabled; });
+}
+
+function tickPomodoro() {
+  pomodoroRemaining--;
+  updatePomodoroRing();
+  if (pomodoroRemaining <= 0) {
+    clearInterval(pomodoroIntervalId);
+    pomodoroRunning = false;
+    document.getElementById('pomodoroStartBtn').textContent = 'Start';
+    setPresetButtonsDisabled(false);
+    showAllTasks();
+    playChime(); // reuse the bell tone as the session-complete signal
+  }
+}
+
+function startPomodoro() {
+  const c = ensureContext();
+  if (c) c.resume().catch(() => {});
+  if (pomodoroRemaining <= 0) pomodoroRemaining = pomodoroDuration;
+  pomodoroRunning = true;
+  pomodoroIntervalId = setInterval(tickPomodoro, 1000);
+  document.getElementById('pomodoroStartBtn').textContent = 'Pause';
+  setPresetButtonsDisabled(true);
+  hideAllButTopTask();
+}
+
+function pausePomodoro() {
+  pomodoroRunning = false;
+  clearInterval(pomodoroIntervalId);
+  document.getElementById('pomodoroStartBtn').textContent = 'Resume';
+}
+
+function resetPomodoro() {
+  clearInterval(pomodoroIntervalId);
+  pomodoroRunning = false;
+  pomodoroRemaining = pomodoroDuration;
+  updatePomodoroRing();
+  document.getElementById('pomodoroStartBtn').textContent = 'Start';
+  setPresetButtonsDisabled(false);
+  showAllTasks();
+}
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (pomodoroRunning) return;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pomodoroDuration = parseInt(btn.dataset.mins, 10) * 60;
+    pomodoroRemaining = pomodoroDuration;
+    updatePomodoroRing();
+  });
+});
+
+document.getElementById('pomodoroStartBtn').addEventListener('click', () => {
+  if (!pomodoroRunning) startPomodoro();
+  else pausePomodoro();
+});
+
+document.getElementById('pomodoroResetBtn').addEventListener('click', resetPomodoro);
+
+updatePomodoroRing(); // initialize ring/time display on load
+
+// Drag-to-reorder for the 3-item task list. Dragging is initiated from the
+// handle only (not the text input) so typing/selecting text isn't disrupted.
+// Since we move the actual DOM nodes (not a separate data array), whatever
+// row ends up first in the DOM is simply "the top thing" — no extra state
+// bookkeeping needed.
+let dragSrcItem = null;
+
+document.querySelectorAll('#taskList .task-item').forEach(item => {
+  const handle = item.querySelector('.drag-handle');
+  handle.setAttribute('draggable', 'true');
+
+  handle.addEventListener('dragstart', () => {
+    dragSrcItem = item;
+    item.classList.add('dragging');
+  });
+  handle.addEventListener('dragend', () => {
+    item.classList.remove('dragging');
+    dragSrcItem = null;
+  });
+
+  item.addEventListener('dragover', (e) => e.preventDefault());
+
+  item.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (!dragSrcItem || dragSrcItem === item) return;
+    const list = document.getElementById('taskList');
+    const rows = Array.from(list.children);
+    const srcIndex = rows.indexOf(dragSrcItem);
+    const targetIndex = rows.indexOf(item);
+    if (srcIndex < targetIndex) {
+      list.insertBefore(dragSrcItem, item.nextSibling);
+    } else {
+      list.insertBefore(dragSrcItem, item);
+    }
+  });
+});
 
 function scheduleNextChord() {
   clearTimeout(chordTimeoutId);
@@ -1083,7 +1327,6 @@ document.getElementById('playBtn').addEventListener('click', () => {
         status.textContent = statusPlayingText();
         playing = true;
         startElapsedTimer();
-        if (chimeEnabled) scheduleNextChime();
       } catch (err) {
         status.textContent = 'Audio error: ' + err.message;
       }
@@ -1097,21 +1340,17 @@ document.getElementById('playBtn').addEventListener('click', () => {
     status.textContent = 'Tap play to start';
     playing = false;
     stopElapsedTimer();
-    clearTimeout(chimeTimeoutId);
   }
 });
 
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    modRate = parseFloat(btn.dataset.rate);
-    modBandLabel = btn.dataset.band;
-    if (playing && lfo) {
-      lfo.frequency.setTargetAtTime(modRate, ctx.currentTime, 0.3);
-      document.getElementById('status').textContent = statusPlayingText();
-    }
-  });
+document.getElementById('modeSelect').addEventListener('change', (e) => {
+  const opt = e.target.selectedOptions[0];
+  modRate = parseFloat(opt.value);
+  modBandLabel = opt.dataset.band;
+  if (playing && lfo) {
+    lfo.frequency.setTargetAtTime(modRate, ctx.currentTime, 0.3);
+    document.getElementById('status').textContent = statusPlayingText();
+  }
 });
 
 document.getElementById('depth').addEventListener('input', (e) => {
@@ -1250,20 +1489,6 @@ window.addEventListener('resize', () => resizeCanvasToDisplaySize());
 
 document.getElementById('vizModeSelect').addEventListener('change', (e) => {
   vizMode = e.target.value;
-});
-
-document.getElementById('chimeToggle').addEventListener('change', (e) => {
-  chimeEnabled = e.target.checked;
-  document.getElementById('chimeIntervalRow').style.display = chimeEnabled ? 'block' : 'none';
-  if (playing) {
-    if (chimeEnabled) scheduleNextChime();
-    else clearTimeout(chimeTimeoutId);
-  }
-});
-
-document.getElementById('chimeInterval').addEventListener('change', (e) => {
-  chimeIntervalMinutes = parseFloat(e.target.value);
-  if (playing && chimeEnabled) scheduleNextChime(); // restarts the countdown from now
 });
 
 document.getElementById('chordLoopToggle').addEventListener('change', (e) => {
